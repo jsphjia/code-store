@@ -1,0 +1,63 @@
+
+// HELPER FUNCTIONS
+pixel_t[] addpixels(pixel_t[] pixels, pixel_t[] inserted, 
+                    int startRow, int startCol, int pixelRow, int pixelCol, 
+                    int width, int height)
+//@requires is_valid_imagesize(width, height);
+//@requires is_valid_pixel(pixelRow, pixelCol, width, height);
+//@requires is_valid_pixel(startRow, startCol, width * 2, height * 2);
+{
+    // variable and array declarations
+    int currRow = startRow; 
+    int currCol = startCol;
+    
+    // loop through idxs to insert pixel values
+    while(currRow < startRow + 2)
+    //@loop_invariant 0 <= currRow && currRow <= startRow + 2;
+    {
+        int pixelIdx = get_index(pixelRow, pixelCol, width, height);
+        pixel_t currPixel = pixels[pixelIdx];
+        int currIdx = get_index(currRow, currCol, width * 2, height * 2);
+        inserted[currIdx] = currPixel;
+        if(currCol == startCol + 1){
+            currCol = startCol;
+            currRow++;
+        } 
+        else currCol++;
+    }
+    
+    return inserted;
+}
+
+// MAIN FUNCTIONS
+int result_width(int width, int height)
+{
+    return 2 * width + height * 0;
+}
+
+int result_height(int width, int height)
+{
+    return 2 * height + width * 0;
+}
+
+pixel_t[] manipulate(pixel_t[] pixels, int width, int height)
+//@requires \length(pixels) > 0 && \length(pixels) == width * height;
+//@ensures \length(\result) == 4 * width * height;
+{
+    // variable and array declaration
+    int newWidth = result_width(width, height);
+    int newHeight = result_height(width, height);
+    pixel_t[] result = alloc_array(pixel_t, newWidth * newHeight);
+
+    // assign each pixel in pixels to 4 pixels in result
+    for(int idx = 0; idx < width * height; idx++)
+    {
+        int row = get_row(idx, width, height);
+        int col = get_column(idx, width, height);
+        result = addpixels(pixels, result, row * 2, col * 2, 
+                           row, col, width, height);
+    }
+
+    // return array
+    return result;
+}

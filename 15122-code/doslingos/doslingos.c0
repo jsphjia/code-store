@@ -1,0 +1,182 @@
+#use <string>
+#use <conio>
+#use <parse>
+
+// HELPER FUNCTIONS
+void printTemp(int[] freq, string[] vocab, int length)
+{
+  for(int i = 0; i < length; i++)
+  {
+    printf("%d %s\n", freq[i], vocab[i]);
+  }
+  printf("print done!\n\n");
+}
+
+// modified recursive mergesort function from sort lecture
+void merge(string[] vocab, int[] freq, 
+            int lo, int mid, int hi)
+//@requires \length(vocab) == \length(freq);
+/*@requires 0 <= lo && lo <= mid &&
+            mid <= hi && hi <= \length(vocab); @*/
+{
+    //variable and array declarations
+    int idx1 = lo;
+    int idx2 = mid;
+    int currIdx = 0;
+    int size = hi - lo;
+    int[] f_tmp = alloc_array(int, size);
+    string[] v_tmp = alloc_array(string, size);
+
+    // loop through 2 sections of the array and sort
+    while(idx1 < mid && idx2 < hi)
+    //@loop_invariant currIdx <= hi - lo;
+    //@loop_invariant lo <= idx1 && idx1 <= mid;
+    //@loop_invariant mid <= idx2 && idx2 <= hi;
+    {
+        int compF1 = freq[idx1];
+        int compF2 = freq[idx2];
+        if(compF1 > compF2)
+        {
+            f_tmp[currIdx] = compF2;
+            v_tmp[currIdx] = vocab[idx2];
+            // printf("added %s %d\n", vocab[idx2], compF2);
+            idx2++;
+        }
+        else 
+        {
+            f_tmp[currIdx] = compF1;
+            v_tmp[currIdx] = vocab[idx1];
+            // printf("added %s %d\n", vocab[idx1], compF1);
+            idx1++;
+        }
+        currIdx++;
+    }
+    //@assert idx1 == mid || idx2 == hi;
+    // printf("%d %d\n", idx1, idx2);
+    // put remaining values at the end of the tmp
+    while(idx1 < mid)
+    {
+        f_tmp[currIdx] = freq[idx1];
+        v_tmp[currIdx] = vocab[idx1];
+        idx1++;
+        currIdx++;
+    }
+
+    while(idx2 < hi)
+    {
+        f_tmp[currIdx] = freq[idx2];
+        v_tmp[currIdx] = vocab[idx2];
+        idx2++;
+        currIdx++;
+    }
+
+    // put values back in original array
+    for(int i = 0; i < size; i++)
+    {
+        vocab[lo + i] = v_tmp[i];
+        freq[lo + i] = f_tmp[i];
+    }
+    // printTemp(f_tmp, v_tmp, size);
+    // printTemp(freq, vocab, hi - lo);
+}
+
+void mergesort(string[]vocab, int[] freq, int lo, int hi, int length)
+//@requires \length(vocab) == \length(freq);
+//@requires 0 <= lo && lo <= hi && hi <= \length(vocab);
+{
+    if(hi - lo <= 1) return;
+    int mid = (lo + hi)/2;
+    // @assert lo < mid && mid < hi;
+    mergesort(vocab, freq, lo, mid, length);
+    mergesort(vocab, freq, mid, hi, length);
+    // printTemp(freq, vocab, length);
+    merge(vocab, freq, lo, mid, hi);
+}
+
+// MAIN FUNCTIONS
+int binsearch(string x, string[] A, int n)
+//@requires 0 <= n && n <= \length(A);  
+//@requires string_is_sorted(A, 0, n);  
+/*@ensures (-1 == \result && !string_is_in(x, A, 0, n))  
+        || ((0 <= \result && \result < n)  
+            && string_equal(A[\result], x)); @*/
+{
+    // variable declaration
+    int lo = 0;
+    int hi = n;
+    int mid = (lo + hi)/2;
+
+    // loop through array
+    while(lo < hi)
+    //@loop_invariant 0 <= lo && lo <= hi && hi <= n;
+    {
+        if(string_equal(A[mid], x)) return mid;
+        else
+        {
+            if(string_compare(A[mid], x) < 0) lo = mid + 1;
+            else hi = mid;
+            mid = (lo + hi)/2;
+        }
+    }
+    return -1;
+}
+
+bool no_dupes(string[] A, int lo, int hi)  
+/*@requires 0 <= lo && lo <= hi && hi <= \length(A); @*/
+{
+    // variable declarations
+    string currStr = "";
+    string cmpStr = "";
+
+    for(int curr = lo + 1; curr < hi; curr++){
+        currStr = A[curr];
+        for(int idx = lo; idx < curr; idx++){
+            cmpStr = A[idx];
+            if(string_equal(currStr, cmpStr)) return false;
+        }
+    }
+
+    return true;
+}  
+
+int count_vocab(string[] vocab, int[] freq, int v,  
+                string corpus,  
+                bool fast)  
+//@requires v == \length(vocab) && v == \length(freq);  
+//@requires string_is_sorted(vocab, 0, v);  
+//@requires no_dupes(vocab, 0, v); 
+{
+    // variable declaration
+    int notFound = 0;
+    int foundIdx = 0;
+
+    // read in the corpus
+    bundle_t words = read_words(corpus);
+    int length = string_bundle_length(words);
+    string[] corpusWords = string_bundle_array(words);
+
+    for(int idx = 0; idx < length; idx++)
+    {
+        string currStr = corpusWords[idx];
+
+        // search for the word in vocab
+        if(fast) foundIdx = binsearch(currStr, vocab, v);
+        else foundIdx = linsearch(currStr, vocab, v);  
+
+        // increment freq or notFound variable
+        if(foundIdx == -1) notFound++;
+        else freq[foundIdx]++;
+    }
+
+    // return the number of words not found in vocab
+    return notFound;
+}
+
+void sort_by_freq(string[] vocab, int[] freq, int v)  
+//@requires v == \length(vocab) && v == \length(freq);  
+//@ensures int_is_sorted(freq, 0, v);
+{
+    // implement merge sort
+    // make sure sort is stable and fast
+    mergesort(vocab, freq, 0, v, v);
+}

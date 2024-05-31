@@ -1,0 +1,362 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <conio>
+
+// You are welcome to define helper functions for your tests
+
+int main() {
+  // testing task 1
+  printf("\n----- TESTING TASK 1: IS_ROPE() -----\n\n");
+
+  // 1-layer tests
+  rope_t R = NULL;
+  assert(is_rope(R)); // NULL rope is valid
+  R = alloc(rope);
+  R->len = 5;
+  assert(!is_rope(R)); // len != string_length(data)
+  R->data = "hello";
+  assert(is_rope(R)); // testing default leaf node
+  R->data = "hey";
+  assert(!is_rope(R)); // len != string_length(data)
+  R->left = R;
+  assert(!is_rope(R)); // circularity
+  R->left = NULL;
+  R->len = 0;
+  R->data = "";
+  assert(!is_rope(R)); // len = 0
+  R->len = 1;
+  assert(!is_rope(R)); // len != string_length(data)
+  R->len = 5;
+  R->data = "hello";
+  R->left = NULL;
+  R->right = NULL;
+
+  // create another rope leaf for future tests
+  rope_t S = alloc(rope);
+  S->data = "you";
+  S->len = 3;
+  S->right = NULL;
+  S->left = NULL;
+
+  printf("all 1-layer tests passed!\n");
+
+  // 2-layer tests
+  rope_t M = alloc(rope);
+  M->len = 8;
+  M->left = R;
+  M->right = S;
+  assert(is_rope(M)); // valid non-leaf rope
+  M->len = 7;
+  assert(!is_rope(M)); // len != sum of child len
+  M->len = 8;
+  M->data = "whatever";
+  assert(is_rope(M)); // data cell doesn't matter
+  M->left = M;
+  assert(!is_rope(M)); // circularity check
+  M->left = R;
+  R->len = 7;
+  R->data = "answers";
+  assert(!is_rope(M)); // len != sum of child len
+  M->len = 10;
+  R->left = M;
+  assert(!is_rope(M)); // child not valid rope
+  R->left = NULL;
+  M->left = NULL;
+  assert(!is_rope(M)); // NULL child node
+  M->left = R;
+  S->left = R;
+  S->right = S;
+  assert(!is_rope(M)); // child not valid rope
+  S->left = NULL;
+  S->right = NULL;
+
+  // create another 2-layer rope for future tests
+
+  rope_t N = alloc(rope);
+  rope_t T = alloc(rope);
+  rope_t U = alloc(rope);
+  T->len = 4;
+  T->data = "data";
+  T->left = NULL;
+  T->right = NULL;
+  U->len = 9;
+  U->data = "challenge";
+  U->left = NULL;
+  U->right = NULL;
+  N->len = 13;
+  N->left = T;
+  N->right = U;
+
+  printf("all 2-layer tests passed!\n");
+
+  // 3-layer tests
+  rope_t A = alloc(rope);
+  A->len = 23;
+  A->left = M;
+  A->right = N;
+  assert(is_rope(A)); // valid 3-layer rope
+  R->left = A;
+  assert(!is_rope(A)); // circularity check
+  R->left = NULL;
+  M->right = A;
+  assert(!is_rope(A)); // circularity check
+  M->right = S;
+  M->len = 17;
+  assert(!is_rope(A)); // len != sum of child len
+  M->len = 10;
+
+  printf("all 3-layer tests passed!\n");
+
+  // asymmetrical tests
+
+  printf("\n----- ALL TASK 1 TESTS PASSED -----\n\n");
+
+  // testing task 2s
+  printf("\n----- TESTING TASK 2: ROPE_NEW(), ROPE_LENGTH(), ROPE_JOIN() -----\n\n");
+
+  // rope_new() tests
+  rope_t B = rope_new("");
+  assert(is_rope(B)); // NULL rope check
+  rope_t C = rope_new("hello");
+  assert(is_rope(C)); // standard rope
+  rope_t D = rope_new(" ");
+  assert(is_rope(D)); // edge case check
+
+  printf("all rope_new() tests passed!\n");
+
+  // rope_length() tests
+  assert(rope_length(B) == 0); // NULL rope length check
+  assert(rope_length(C) == 5); // standard rope length check
+  C->data = "complicated";
+  C->len = 11;
+  assert(rope_length(C) == 11);
+  assert(rope_length(C) != 0);
+  assert(rope_length(D) == 1);
+  D->data = "very ";
+  D->len = 5;
+  assert(rope_length(D) == 5);
+
+  printf("all rope_length() tests passed!\n");
+
+  // rope_join() tests
+  rope_t E = rope_join(D, C);
+  assert(is_rope(E));
+  assert(rope_length(E) == 16);
+
+  rope_t F = rope_new(" to complete");
+  assert(is_rope(F));
+  assert(rope_length(F) == 12);
+
+  rope_t G = rope_join(E, F);
+  assert(is_rope(G));
+  assert(rope_length(G) == 28);
+
+  printf("all rope_join() tests passed!\n");
+
+  printf("\n----- ALL TASK 2 TESTS PASSED -----\n\n");
+
+  // testing task 3
+  printf("\n----- TESTING TASK 3: ROPE_CHARAT(), ROPE_TOSTRING() -----\n\n");
+
+  // rope_charat() tests
+  assert(rope_charat(C, 0) == 'c');
+  assert(rope_charat(C, 1) == 'o');
+  assert(rope_charat(D, 4) == ' ');
+  assert(rope_charat(E, 11) == 'c');
+  assert(rope_charat(F, 0) == ' ');
+  assert(rope_charat(F, 3) == ' ');
+  assert(rope_charat(F, 5) == 'o');
+  assert(rope_charat(G, 21) == 'o');
+
+  printf("passed all rope_charat() tests!\n");
+
+  // rope_tostring() tests
+  assert(string_equal(rope_tostring(B), ""));
+  assert(string_equal(rope_tostring(C), "complicated"));
+  assert(string_equal(rope_tostring(D), "very "));
+  assert(string_equal(rope_tostring(E), "very complicated"));
+  assert(string_equal(rope_tostring(F), " to complete"));
+  assert(string_equal(rope_tostring(G), "very complicated to complete"));
+
+  printf("passed all rope_tostring() tests!\n");
+
+  printf("\n----- ALL TASK 3 TESTS PASSED -----\n\n");
+  
+  // testing task 4
+  printf("\n----- TESTING TASK 4: ROPE_JOIN() -----\n\n");
+  // rope_t top = alloc(rope);
+  // rope_t mid1 = alloc(rope);
+  // rope_t mid2 = alloc(rope);
+  // rope_t bot1 = rope_new("t");
+  // rope_t bot2 = rope_new("otally");
+  // rope_t bot3 = rope_new("efficien");
+  // rope_t bot4 = rope_new("t");
+  // mid1->len = rope_length(bot1) + rope_length(bot2);
+  // mid1->left = bot1;
+  // mid1->right = bot2;
+  // mid2->len = rope_length(bot3) + rope_length(bot4);
+  // mid2->left = bot3;
+  // mid2->right = bot4;
+  // top->len = rope_length(mid1) + rope_length(mid2);
+  // top->left = mid1;
+  // top->right = mid2;
+
+  // rope_t res = rope_sub(top, 0, 1);
+  // assert(res == bot1);
+  // res = rope_sub(top, 7, 16);
+  // assert(res == mid2);
+  // res = rope_sub(top, 2, 3);
+  // assert(string_equal(res->data, "t"));
+
+  printf("\n----- ALL TASK 4 TESTS PASSED -----\n\n");
+
+  // testing task 5
+  printf("\n----- TESTING TASK 5: ROPE_REDUCE() -----\n\n");
+
+  // first example
+  rope_t leaf1 = rope_new("a");
+  rope_t leaf2 = rope_new("br");
+  rope_t leaf3 = rope_new("abr");
+  rope_t leaf4 = rope_new("a");
+  rope_t leaf5 = rope_new("a");
+  rope_t leaf6 = rope_new("br");
+  rope_t leaf7 = rope_new("a");
+  rope_t mid1 = alloc(rope);
+  rope_t mid2 = alloc(rope);
+  rope_t mid3 = alloc(rope);
+  rope_t mid4 = alloc(rope);
+  rope_t[] leafs = alloc_array(rope_t, 3);
+
+  leafs[0] = mid1;
+  leafs[1] = mid2;
+  leafs[2] = mid3;
+
+  mid1->left = leaf1;
+  mid1->right = leaf2;
+  mid2->left = leaf3;
+  mid2->right = leaf4;
+  mid3->left = leaf5;
+  mid3->right = mid4;
+  mid4->left = leaf6;
+  mid4->right = leaf7;
+
+  mid4->len = rope_length(leaf6) + rope_length(leaf7);
+  mid3->len = rope_length(mid4) + rope_length(leaf5);
+  mid2->len = rope_length(leaf3) + rope_length(leaf4);
+  mid1->len = rope_length(leaf1) + rope_length(leaf2);
+
+  rope_reduce(leafs, 3);
+  assert(leafs[1]->left == leafs[0]); 
+  assert(leafs[1] == leafs[2]);
+  assert(leafs[1]->right == leafs[0]->left);
+
+  // second example
+  rope_t[] A1 = alloc_array(rope_t, 2);
+  rope_t l1 = rope_new("a");
+  rope_t l2 = rope_new("a");
+  rope_t l3 = rope_new("a");
+  rope_t l4 = rope_new("a");
+  rope_t l5 = rope_new("a");
+  rope_t l6 = rope_new("a");
+  rope_t l7 = rope_new("a");
+  rope_t l8 = rope_new("a");
+  rope_t l9 = rope_new("a");
+  rope_t l10 = rope_new("a");
+  rope_t l11 = rope_new("a");
+  rope_t l12 = rope_new("a");
+  rope_t l13 = rope_new("a");
+  rope_t m1 = alloc(rope);
+  rope_t m2 = alloc(rope);
+  rope_t m3 = alloc(rope);
+  rope_t m4 = alloc(rope);
+  rope_t m5 = alloc(rope);
+  rope_t m6 = alloc(rope);
+  rope_t m7 = alloc(rope);
+  rope_t m8 = alloc(rope);
+  rope_t m9 = alloc(rope);
+  rope_t m10 = alloc(rope);
+  rope_t m11 = alloc(rope);
+  A1[0] = m1;
+  m1->left = m2;
+  m2->left = m3;
+  m3->left = m4;
+  m4->left = l1;
+  m4->right = l2;
+  m3->right = l3;
+  m2->right = l4;
+  m1->right = l5;
+  A1[1] = m5;
+  m5->left = m6;
+  m6->left = m7;
+  m6->right = m8;
+  m5->right = m9;
+  m9->left = m10;
+  m9->right = m11;
+  m7->left = l6;
+  m7->right = l7;
+  m8->left = l8;
+  m8->right = l9;
+  m10->left = l10;
+  m10->right = l11;
+  m11->left = l12;
+  m11->right = l13;
+
+  m11->len = rope_length(l12) + rope_length(l13);
+  m10->len = rope_length(l10) + rope_length(l11);
+  m9->len = rope_length(m10) + rope_length(m11);
+  m8->len = rope_length(l8) + rope_length(l9);
+  m7->len = rope_length(l6) + rope_length(l7);
+  m6->len = rope_length(m7) + rope_length(m8);
+  m5->len = rope_length(m6) + rope_length(m9);
+  m4->len = rope_length(l1) + rope_length(l2);
+  m3->len = rope_length(m4) + rope_length(l3);
+  m2->len = rope_length(m3) + rope_length(l4);
+  m1->len = rope_length(m2) + rope_length(l5);
+
+  rope_reduce(A1, 2);
+
+  assert(A1[1]->left == A1[1]->right);
+  assert(A1[1]->left == A1[0]->left);
+  assert(A1[0]->left->left->left->left == A1[0]->left->left->left->right);
+  assert(A1[0]->left->left->left->left == A1[0]->left->left->right);
+  assert(A1[0]->left->left->left->left == A1[0]->left->right);
+  assert(A1[0]->left->left->left->left == A1[0]->right);
+
+  // third exmple
+  rope_t[] A2 = alloc_array(rope_t, 4);
+  rope_t le1 = rope_new("a");
+  rope_t le2 = rope_new("br");
+  rope_t le3 = rope_new("a");
+  rope_t le4 = rope_new("abr");
+  rope_t le5 = rope_new("e");
+  rope_t le6 = rope_new("bre");
+  rope_t mi1 = alloc(rope);
+  rope_t mi2 = alloc(rope);
+  rope_t mi3 = alloc(rope);
+
+  A2[0] = mi1;
+  mi1->left = le1;
+  mi1->right = mi2;
+  mi2->left = le2;
+  mi2->right = le3;
+  mi2->len = rope_length(le2) + rope_length(le3);
+  mi1->len = rope_length(le1) + rope_length(mi2);
+  A2[1] = NULL;
+  A2[2] = mi3;
+  mi3->left = le4;
+  mi3->right = le5;
+  mi3->len = rope_length(le4) + rope_length(le5);
+  A2[3] = le6;
+
+  rope_reduce(A2, 4);
+
+  assert(A2[0]->right->right == A2[0]->left);
+  assert(A2[1] == NULL);
+
+  printf("\n----- ALL TASK 5 TESTS PASSED -----\n\n");  
+
+  printf("All tests passed!\n");
+  return 0;
+}

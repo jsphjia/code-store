@@ -1,0 +1,141 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <conio>
+#use <parse>
+
+// You are welcome to define helper functions for your tests
+void printFreq(int[] freq, string[] vocab, int length)
+//@requires length == \length(freq);
+{
+  for(int i = 0; i < length; i++)
+  {
+    printf("%d %s\n", freq[i], vocab[i]);
+  }
+  printf("print done!\n\n");
+}
+
+bool equal_array(string[] vocab, string[] checkV, int[] freq, int[] checkF, int l)
+//@requires \length(vocab) == \length(freq) && \length(vocab) == l;
+//@requires \length(freq) == \length(checkF);
+//@requires \length(vocab) == \length(checkV);
+{
+  for(int i = 0; i < l; i++)
+  {
+    if(!string_equal(vocab[i], checkV[i])) return false;
+    if(freq[i] != checkF[i]) return false;
+  }
+  return true;
+}
+
+int main() {
+  // Create a few vocabularies and the corresponding frequences by hand
+  string[] vocab1 = parse_tokens("a chuck could wood woodchuck");
+  string[] vocab2 = parse_tokens("a b c d e");
+  string[] vocab3 = parse_tokens("as how however if wouldchuck");
+  string[] vocab6 = parse_tokens("axle burrow fail his jam out");
+  string[] vocab7 = alloc_array(string, 0);
+  string[] vocab8 = parse_tokens("burrow his is of out phil");
+  int[] freq1 = alloc_array(int, 5);
+  int[] freq2 = alloc_array(int, 5);
+  int[] freq3 = alloc_array(int, 5);
+  int[] freq6 = alloc_array(int, 6);
+  int[] freq7 = alloc_array(int, 0);
+  int[] freq8 = alloc_array(int, 6);
+
+  // Later on, read vocabularies from file and create their frequency arrays
+  bundle_t words = read_words("texts/small_vocab.txt");
+  int length = string_bundle_length(words);
+  string[] vocab4 = string_bundle_array(words);
+  int[] freq4 = alloc_array(int, length);
+
+  bundle_t words2 = read_words("texts/small_vocab.txt");
+  int length2 = string_bundle_length(words2);
+  string[] vocab5 = string_bundle_array(words2);
+  int[] freq5 = alloc_array(int, length2);
+
+  // Using them, write test cases for count_vocab
+  printf("here1\n");
+  assert(count_vocab(vocab1, freq1, 5, "texts/woodchuck.txt", true)==7);
+  int[] checkF1 = parse_ints("4 4 4 4 4", 10);
+  string[] checkV1 = parse_tokens("a chuck could wood woodchuck");
+  assert(equal_array(vocab1, checkV1, freq1, checkF1, 5));
+  // printFreq(freq1, vocab1, 5);
+  printf("here2\n");
+  assert(count_vocab(vocab2, freq2, 5, "texts/woodchuck.txt", true)==23);
+  int[] checkF2 = parse_ints("4 0 0 0 0", 10);
+  string[] checkV2 = parse_tokens("a b c d e");
+  assert(equal_array(vocab2, checkV2, freq2, checkF2, 5));
+  // printFreq(freq2, vocab2, 5);
+  printf("here3\n");
+  assert(count_vocab(vocab3, freq3, 5, "texts/woodchuck.txt", true)==22);
+  int[] checkF3 = parse_ints("2 1 0 2 0", 10);
+  string[] checkV3 = parse_tokens("as how however if wouldchuck");
+  assert(equal_array(vocab3, checkV3, freq3, checkF3, 5));
+  // printFreq(freq3, vocab3, 5);
+  printf("here4\n");
+  assert(count_vocab(vocab6, freq6, 6, "texts/scott_tweet.txt", true) == 3);
+  int[] checkF6 = parse_ints("0 1 0 1 0 1", 10);
+  string[] checkV6 = parse_tokens("axle burrow fail his jam out");
+  assert(equal_array(vocab6, checkV6, freq6, checkF6, 6));
+
+  printf("here5\n");
+  assert(count_vocab(vocab7, freq7, 0, "texts/scott_tweet.txt", true) == 6);
+  int[] checkF7 = alloc_array(int, 0);
+  string[] checkV7 = alloc_array(string, 0);
+  assert(equal_array(vocab7, checkV7, freq7, checkF7, 0));
+
+  printf("here6\n");
+  assert(count_vocab(vocab8, freq8, 6, "texts/scott_tweet.txt", true) == 0);
+  int[] checkF8 = parse_ints("1 1 1 1 1 1", 10);
+  string[] checkV8 = parse_tokens("burrow his is of out phil");
+  assert(equal_array(vocab8, checkV8, freq8, checkF8, 6));
+
+  printf("here7\n");
+  count_vocab(vocab4, freq4, length, "texts/sonnets.txt", true);
+  // printFreq(freq4, vocab4, length);
+
+  // printf("here8\n");
+  // count_vocab(vocab5, freq5, length2, "texts/shakespeare.txt", true);
+  // printFreq(freq5, vocab5, length2);
+
+  // Using them, write test cases for sort_by_freq
+  printf("-----SMALL TEXT TEST RESULTS-----\n");
+  sort_by_freq(vocab1, freq1, 5);
+  int[] checkFreq1 = parse_ints("4 4 4 4 4", 10);
+  string[] checkVocab1 = parse_tokens("a chuck could wood woodchuck");
+  assert(equal_array(vocab1, checkVocab1, freq1, checkFreq1, 5));
+  // printFreq(freq1, vocab1, 5);
+
+  sort_by_freq(vocab2, freq2, 5);
+  int[] checkFreq2 = parse_ints("0 0 0 0 4", 10);
+  string[] checkVocab2 = parse_tokens("b c d e a");
+  assert(equal_array(vocab2, checkVocab2, freq2, checkFreq2, 5));
+  // printFreq(freq2, vocab2, 5);
+
+  sort_by_freq(vocab3, freq3, 5);
+  int[] checkFreq3 = parse_ints("0 0 1 2 2", 10);
+  string[] checkVocab3 = parse_tokens("however wouldchuck how as if");
+  assert(equal_array(vocab3, checkVocab3, freq3, checkFreq3, 5));
+  // printFreq(freq3, vocab3, 5);
+
+  sort_by_freq(vocab6, freq6, 6);
+  int[] checkFreq6 = parse_ints("0 0 0 1 1 1", 10);
+  string[] checkVocab6 = parse_tokens("axle fail jam burrow his out");
+  assert(equal_array(vocab6, checkVocab6, freq6, checkFreq6, 6));
+  // printFreq(freq6, vocab6, 6);
+
+  printf("-----SONNETS TEXT TEST RESULT-----\n");
+  sort_by_freq(vocab4, freq4, length);
+  // printFreq(freq4, vocab4, length);
+
+  // printf("-----SHAKESPEARE TEXT TEST RESULT-----\n");
+  // sort_by_freq(vocab5, freq5, length2);
+  // printFreq(freq5, vocab5, length2);
+
+  // DON'T WRITE TESTS FOR binsearch OR no_dupes
+
+  printf("All tests passed!\n");
+  return 0;
+}

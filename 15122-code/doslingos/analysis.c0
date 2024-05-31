@@ -1,0 +1,74 @@
+#use <args>
+#use <conio>
+
+int main()
+{
+    // pass in arguments from command line
+    args_t args = args_parse();
+    // int argc = args->argc;
+    string[] argv = args->argv; 
+    //@assert \length(argv) == 2;
+
+    // argv[0] is sorted vocab
+    bundle_t words = read_words(argv[0]);
+    int length = string_bundle_length(words);
+    string[] vocab = string_bundle_array(words);
+    int[] freq = alloc_array(int, length);
+
+    // argv[1] is corpus file
+    string corpus = argv[1];
+
+    // sort vocab by freq
+    count_vocab(vocab, freq, length, corpus, true);
+    sort_by_freq(vocab, freq, length);
+
+    // 4 most common words
+    printf("The 4 most common words in the corpus are:\n");
+    for(int i = 1; i <= 4; i++)
+    {
+        printf("%d. %s (appears %d times)\n", 
+               i, vocab[length-i], freq[length-i]);
+    }
+
+    // words with > 128 occurences
+    int idx = length - 1;
+    int currFreq = freq[idx];
+    printf("\nThese words appeared 128 times:");
+    while(idx >= 0 && currFreq >= 128)
+    {
+        if(currFreq == 128) printf(" %s", vocab[idx]);
+        idx--;
+        currFreq = freq[idx];
+    }
+    printf("\n");
+
+    // count number of singletons
+    int singletons = 0;
+    idx = 0;
+    currFreq = freq[idx];
+    while(idx <= length && currFreq <= 1)
+    {
+        if(currFreq == 1) singletons++;
+        idx++;
+        currFreq = freq[idx];
+    }
+
+    printf("\nThere are %d singletones in the text.\n", singletons);
+
+    // count number of unique frequencies
+    int unique = 0;
+    int lastFreq;
+    idx = 0;
+    currFreq = -1;
+    while(idx < length)
+    {
+        lastFreq = currFreq;
+        currFreq = freq[idx];
+        if(currFreq > lastFreq) unique++;
+        idx++;
+    }
+
+    printf("\nThere are %d unique frequencies in the text.\n", unique);
+
+    return 0;
+}

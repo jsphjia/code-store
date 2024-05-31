@@ -1,0 +1,82 @@
+#use <string>
+#use <conio>
+#use <parse>
+
+// test cases for binSearch()
+void testSearch()
+{
+    string[] A = alloc_array(string, 10);
+    A[0] = "alexa";
+    A[1] = "bob";
+    A[2] = "cameron";
+    A[3] = "delta";
+    A[4] = "ever";
+    A[5] = "green";
+    A[6] = "hello";
+    A[7] = "index";
+    A[8] = "joyful";
+    A[9] = "kind";
+
+    assert(binsearch("alexa", A, 10) == 0);
+    assert(binsearch("delta", A, 7) == 3);
+    assert(binsearch("hello", A, 5) == -1);
+    assert(binsearch("alexa", A, 0) == -1);
+    assert(binsearch("kind", A, 10) == 9);
+}
+
+// test cases for no_dupes()
+void testDupes()
+{
+    string[] A = alloc_array(string, 5);
+    // A: ["", "", "", "", ""];
+    
+    assert(!no_dupes(A, 0, 5));
+    assert(no_dupes(A, 0, 0));
+
+    A[1] = "hello";
+    A[2] = "bye";
+    A[3] = "no";
+    // A: ["", "hello", "bye", "no", ""];
+    assert(!no_dupes(A, 0, 5));
+    assert(no_dupes(A, 0, 4));
+
+    A[4] = "hello";
+    // A: ["", "hello", "bye", "no", "hello"];
+    assert(!no_dupes(A, 0, 5));
+    assert(!no_dupes(A, 1, 5));
+    assert(no_dupes(A, 1, 4));
+
+    A[0] = "hello";
+    A[1] = "hello";
+    A[2] = "hello";
+    A[3] = "hello";
+    A[4] = "hello";
+
+    assert(no_dupes(A, 0, 1));
+    assert(!no_dupes(A, 0, 2));
+    assert(!no_dupes(A, 0, 3));
+    assert(!no_dupes(A, 0, 4));
+    assert(!no_dupes(A, 0, 5));
+
+    A[1] = "heloo";
+    A[2] = "heooo";
+    A[3] = "hoooo";
+    A[4] = "ooooo";
+
+    assert(no_dupes(A, 0, 1));
+    assert(no_dupes(A, 0, 2));
+    assert(no_dupes(A, 0, 3));
+    assert(no_dupes(A, 0, 4));
+    assert(no_dupes(A, 0, 5));
+}
+
+int main()
+{
+    testSearch();
+    printf("passed all binSearch() tests\n");
+
+    testDupes();
+    printf("passed all no_dupes() tests\n");
+
+    return 0;
+}

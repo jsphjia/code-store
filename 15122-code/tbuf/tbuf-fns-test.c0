@@ -1,0 +1,9 @@
+int main()
+{
+    // tbuf_row() tests
+    tbuf* a = alloc(tbuf);
+
+    //tbuf_col() tests
+
+    return 0;
+}

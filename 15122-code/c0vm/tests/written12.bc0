@@ -1,0 +1,60 @@
+C0 C0 FF EE       # magic number
+00 17             # version 11, arch = 1 (64 bits)
+
+00 00             # int pool count
+# int pool
+
+00 00             # string pool total size
+# string pool
+
+00 02             # function count
+# function_pool
+
+#<main>
+00                # number of arguments = 0
+00                # number of local variables = 0
+00 0A             # code length = 10 bytes
+10 00    # bipush 0           # 0
+10 01    # bipush 1           # 1
+10 0A    # bipush 10          # 10
+B8 00 01 # invokestatic 1     # g(0, 1, 10)
+B0       # return             # 
+
+
+#<g>
+03                # number of arguments = 3
+03                # number of local variables = 3
+00 30             # code length = 48 bytes
+15 02    # vload 2            # c
+10 00    # bipush 0           # 0
+9F 00 06 # if_cmpeq +6        # if (c == 0) goto <00:then>
+A7 00 09 # goto +9            # goto <01:else>
+# <00:then>
+15 00    # vload 0            # a
+B0       # return             # 
+A7 00 03 # goto +3            # goto <02:endif>
+# <01:else>
+# <02:endif>
+15 02    # vload 2            # c
+10 01    # bipush 1           # 1
+9F 00 06 # if_cmpeq +6        # if (c == 1) goto <03:then>
+A7 00 09 # goto +9            # goto <04:else>
+# <03:then>
+15 01    # vload 1            # b
+B0       # return             # 
+A7 00 03 # goto +3            # goto <05:endif>
+# <04:else>
+# <05:endif>
+15 01    # vload 1            # b
+15 00    # vload 0            # a
+15 01    # vload 1            # b
+60       # iadd               # (a + b)
+15 02    # vload 2            # c
+10 01    # bipush 1           # 1
+64       # isub               # (c - 1)
+B8 00 01 # invokestatic 1     # g(b, (a + b), (c - 1))
+B0       # return             # 
+
+00 00             # native count
+# native pool
+

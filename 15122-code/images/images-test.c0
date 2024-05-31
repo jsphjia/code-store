@@ -1,0 +1,161 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <conio>
+#use <img>
+
+
+
+int main() {
+
+  // Create a few small images manually -- here's an example
+  pixel_t[] A = alloc_array(pixel_t, 4); // A is a 2x2 image
+  int width_A  = 2;
+  int height_A = 2;
+  A[0] = make_pixel(255, 255, 0, 0);     // A[0] is a red pixel
+  A[1] = make_pixel(255, 0, 255, 0);     // A[1] is a green pixel
+  A[2] = make_pixel(255, 0, 0, 255);     // A[2] is a blue pixel
+  A[3] = make_pixel(255, 255, 255, 0);   // A[3] is a yellow pixel
+  printf("Here's what the image looks like:\n");
+  image_print(A, width_A, height_A);
+
+  // Load some large images -- here's an example
+  image_t g5 = image_load("img/g5.png");
+  if (g5 == NULL) error("Could not load source image");
+  int width = image_width(g5);
+  int height = image_height(g5);
+  pixel_t[] inpixels = image_data(g5);
+  //@assert \length(inpixels) == width * height;
+  // printf("Loaded image.  Dimensions are %d by %d.\n", width, height);
+
+
+  // Test the functions you implemented in imageutil.c0
+  //   on small and large images
+  assert(is_valid_pixel(0, 0, width_A, height_A));
+  assert(is_valid_pixel(1, 0, width_A, height_A));
+  assert(is_valid_pixel(0, 1, width_A, height_A));
+  assert(!is_valid_pixel(2, 1, width_A, height_A));
+  assert(!is_valid_pixel(1, 2, width_A, height_A));
+  assert(!is_valid_pixel(int_min(), 0, width_A, height_A));
+  assert(!is_valid_pixel(int_max(), 0, width_A, height_A));
+  assert(!is_valid_pixel(0, int_max(), width_A, height_A));
+  assert(!is_valid_pixel(0, int_min(), width_A, height_A));
+  
+  assert(is_valid_pixel(0, 0, width, height));
+  assert(is_valid_pixel(599, 799, width, height));
+  assert(!is_valid_pixel(600, 0, width, height));
+  assert(!is_valid_pixel(0, 800, width, height));
+  assert(!is_valid_pixel(int_min(), 0, width, height));
+  assert(!is_valid_pixel(int_max(), 0, width, height));
+  assert(!is_valid_pixel(0, int_min(), width, height));
+  assert(!is_valid_pixel(0, int_max(), width, height));
+
+  assert(get_row(0, 5, 5) == 0);
+  assert(get_column(0, 5, 5) == 0);
+  assert(get_row(24, 5, 5) == 4);
+  assert(get_column(24, 5, 5) == 4);
+  assert(get_row(6, 5, 5) == 1);
+  assert(get_column(6, 5, 5) == 1);
+  assert(get_row(4, 5, 5) == 0);
+  assert(get_column(4, 5, 5) == 4);
+  assert(get_row(5, 5, 5) == 1);
+  assert(get_column(5, 5, 5) == 0);
+
+  printf("All imageutil.c0 tests passed!\n");
+
+  // Test rotate on your small images
+
+  // // testing 2x2 array image rotation
+  // pixel_t[] rA = ccw(A, width_A, height_A);
+  // printf("\n\nThis is the rotated array:\n");
+  // image_print(rA, width_A, height_A);
+
+  // // testing 3x3 array image rotation
+  pixel_t[] B = alloc_array(pixel_t, 9); // B is a 3x3 image
+  int width_B  = 3;
+  int height_B = 3;
+  B[0] = make_pixel(255, 255, 0, 0);     
+  B[1] = make_pixel(255, 0, 255, 0);     
+  B[2] = make_pixel(255, 0, 0, 255);     
+  B[3] = make_pixel(255, 255, 255, 0);
+  B[4] = make_pixel(255, 255, 0, 255); 
+  B[5] = make_pixel(255, 0, 255, 255); 
+  B[6] = make_pixel(255, 255, 255, 255); 
+  B[7] = make_pixel(255, 100, 100, 100);    
+  B[8] = make_pixel(255, 75, 255, 27); 
+  printf("\nHere's what the image looks like:\n");
+  image_print(B, width_B, height_B);
+
+  // pixel_t[] rB = ccw(B, width_B, height_B);
+  // printf("\nThis is the rotated array:\n");
+  // image_print(rB, width_B, height_B);
+
+  // pixel_t[] rrB = ccw(rB, width_B, height_B);
+  // printf("\nThis is the double rotated array:\n");
+  // image_print(rrB, width_B, height_B);
+
+  // testing 4x4 array image rotation
+  pixel_t[] C = alloc_array(pixel_t, 16); // B is a 4x4 image
+  int width_C  = 4;
+  int height_C = 4;
+  C[0] = make_pixel(255, 255, 0, 0);     
+  C[1] = make_pixel(255, 0, 255, 0);     
+  C[2] = make_pixel(255, 0, 0, 255);     
+  C[3] = make_pixel(255, 255, 255, 0);
+  C[4] = make_pixel(255, 255, 0, 255); 
+  C[5] = make_pixel(255, 0, 255, 255); 
+  C[6] = make_pixel(255, 255, 255, 255); 
+  C[7] = make_pixel(255, 100, 100, 100);    
+  C[8] = make_pixel(255, 75, 255, 27);
+  C[9] = make_pixel(255, 80, 127, 62); 
+  C[10] = make_pixel(255, 162, 240, 227); 
+  C[11] = make_pixel(255, 255, 222, 18); 
+  C[12] = make_pixel(255, 202, 162, 97);  
+  C[13] = make_pixel(255, 113, 87, 137); 
+  C[14] = make_pixel(255, 182, 12, 198); 
+  C[15] = make_pixel(255, 42, 109, 75); 
+  printf("\nHere's what the image looks like:\n");
+  image_print(C, width_C, height_C);
+
+  // pixel_t[] rC = ccw(C, width_C, height_C);
+  // printf("\nThis is the rotated array:\n");
+  // image_print(rC, width_C, height_C);
+
+  // pixel_t[] rrC = ccw(rC, width_C, height_C);
+  // printf("\nThis is the double rotated array:\n");
+  // image_print(rrC, width_C, height_C);
+
+  pixel_t[] resultA = rotate(A, width_A, height_A);
+  printf("\nPrinting resulting array\n");
+  image_print(resultA, width_A * 2, height_A * 2);
+
+  pixel_t[] resultC = rotate(C, width_C, height_C);
+  printf("\nPrinting resulting array\n");
+  image_print(resultC, width_C * 2, height_C * 2);
+
+  printf("All rotate.c0 tests passed!\n");
+
+  // Test apply_mask on your small images
+  int[] mask = alloc_array(int, 9);
+  int width_M = 3;
+  mask[0] = 1;
+  mask[1] = 3;
+  mask[2] = 1;
+  mask[3] = 3;
+  mask[4] = 5;
+  mask[5] = 3;
+  mask[6] = 1;
+  mask[7] = 3;
+  mask[8] = 1;
+
+  printf("Here is the masked array of B\n");
+  image_print(apply_mask(B, width_B, height_B, mask, width_M), 
+              width_M, width_M);
+
+
+  printf("All mask.c0 tests passed");
+
+  printf("\nAll tests passed!\n");
+  return 0;
+}

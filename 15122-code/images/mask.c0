@@ -1,0 +1,93 @@
+#use <conio>
+#use <img>
+
+// HELPER FUNCTIONS
+
+// PURPOSE: find the mask value of a certain pixel
+int mask_val(pixel_t[] pixels, int width, int height, int idx, 
+            int[] mask, int maskWidth)
+//@requires is_valid_imagesize(width, height);
+//@requires is_valid_imagesize(maskWidth, maskWidth);
+//@requires \length(pixels) == width * height;
+//@requires \length(mask) == maskWidth * maskWidth;
+//@requires maskWidth % 2 == 1;
+{
+    // variable and array declaration
+    int gap = (maskWidth - 1) / 2;
+    int boundRow = 0; 
+    int boundCol = 0; 
+    int currRow = 0; 
+    int currCol = 0; 
+    int originalCol = 0;
+    int maskRow = 0; 
+    int maskCol = 0;
+    int sum = 0;
+    
+    // calculate (row, col) for top left corner of mask
+    currRow = get_row(idx, width, height) - gap;
+    currCol = get_column(idx, width, height) - gap;
+    boundRow = get_row(idx, width, height) + gap;
+    boundCol = get_column(idx, width, height) + gap;
+
+    originalCol = currCol;
+
+    // loop through the masked elements around the center
+    while(currRow <= boundRow)
+    //@loop_invariant get_row(idx, width, height) >= 0;
+    //@loop_invariant get_row(idx, width, height) <= height;
+    //@loop_invariant get_column(idx, width, height) >= 0;
+    //@loop_invariant get_column(idx, width, height) <= width;
+    {
+        // check for boundness
+        // if in bounds, add to mask value
+        if(currRow >= 0 && currRow < height && currCol >= 0 && currCol < width)
+        {
+            int pixelIdx = get_index(currRow, currCol, width, height);
+            int blue = get_blue(pixels[pixelIdx]);
+            int green = get_green(pixels[pixelIdx]);
+            int red = get_red(pixels[pixelIdx]);
+            int avg = (blue + green + red) / 3;
+            int maskIdx = get_index(maskRow, maskCol, maskWidth, maskWidth);
+            sum += mask[maskIdx] * avg;
+        }
+
+        // update (row, col) variables
+        if(currCol == boundCol){
+            currCol = originalCol;
+            currRow++;
+        }
+        else currCol++;
+        if(maskCol == maskWidth - 1){
+            maskCol = 0;
+            maskRow++;
+        }
+        else maskCol++;
+    }
+
+    // return mask value for specified pixel
+    return sum;
+}
+
+// MAIN FUNCTION
+// PURPOSE: return array of mask values of pixels
+int[] apply_mask(pixel_t[] pixels, int width, int height, 
+                int[] mask, int maskWidth)
+//@requires is_valid_imagesize(width, height);
+//@requires is_valid_imagesize(maskWidth, maskWidth);
+//@requires \length(pixels) == width * height;
+//@requires \length(mask) == maskWidth * maskWidth;
+//@requires maskWidth % 2 == 1;
+{
+    // variable and array declarations
+    int[] result = alloc_array(int, width * height);
+
+    // loop through pixels and assign a mask value to each piel
+    for(int idx = 0; idx < width * height; idx++)
+    {
+        // for each pixel, calculate the mask value and assign it
+        result[idx] = mask_val(pixels, width, height, idx, mask, maskWidth);
+    }    
+
+    // return resulting array
+    return result;
+}

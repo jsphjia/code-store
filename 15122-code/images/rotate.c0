@@ -1,0 +1,164 @@
+#use <conio>
+#use <img>
+
+// HELPER FUNCTIONS
+// PURPOSE: insert smaller array into a larger array
+// 0: TL, 1: TR, 2: BL, 3: BR
+pixel_t[] insert(pixel_t[] part, pixel_t[] whole, 
+                int width, int height, int startRow, 
+                int startCol, int startIdx, int section)
+//@requires is_valid_imagesize(width, height);
+{
+    // variable declarations
+    int boundHeight = 0;
+
+    // conditions based on area of larger array
+    // section 0: top left
+    if(section == 0){
+        boundHeight = height;
+    }
+    // section 1: top right
+    else if(section == 1){
+        boundHeight = height;
+    }
+    // section 2: bottom left
+    else if(section == 2){
+        boundHeight = height * 2;
+    }
+    //section 3: bottom right
+    else if(section == 3){
+        boundHeight = height * 2;
+    }
+
+    // loop through pixels array to insert
+    while(startRow < boundHeight && startIdx < 4 * height * width)
+    //@loop_invariant 0 <= startRow && startRow <= boundHeight;
+    //@loop_invariant 0 <= startIdx && startIdx <= 4 * height * width;
+    {
+        // insert pixel by pixel into the resulting array
+        int wholeIdx = get_index(startRow, startCol, 2*width, 2*height); 
+        whole[wholeIdx] = part[startIdx];
+
+        // update currRow, currCol, currIdx
+        // reset currCol if reaching the end of the row
+        if(section == 0 && startCol == width - 1){
+            startCol = 0;
+            startRow++;
+        }
+        else if(section == 1 && startCol == 2 * width - 1){
+            startCol = width;
+            startRow++;
+        }
+        else if(section == 2 && startCol == width - 1){
+            startCol = 0;
+            startRow++;
+        }
+        else if(section == 3 && startCol == 2 * width - 1){
+            startCol = width;
+            startRow++;
+        }
+        else startCol++;
+        startIdx++;
+    }
+    return whole;
+}
+
+
+// PURPOSE: rotate the pixel_t array by 90 counterclockwise
+pixel_t[] ccw(pixel_t[] original, int width, int height)
+//@requires is_valid_imagesize(width, height); 
+//@requires \length(original) == width * height;
+//@requires width == height;
+//@ensures \length(\result) == width * height;
+{
+    // variable and array declarations
+    int currRow = 0; 
+    int currCol = 0; 
+    int newRow = 0; 
+    int newCol = 0; 
+    int newIdx = 0;
+    pixel_t[] rotated = alloc_array(pixel_t, width * height);
+
+    // rotate the array 90 ccw
+    // put pixels into corresponding (row, column) index in new array
+    for(int idx = 0; idx < width * height; idx++)
+    {
+        // calculate current (row, col) values for the current index
+        currRow = get_row(idx, width, height);
+        currCol = get_column(idx, width, height);
+
+        // printf("%d, %d\n", currRow, currCol);
+
+        // modify row values in order to rotate
+        newRow = height - currCol - 1;
+        newCol = currRow;
+
+        // printf("%d, %d\n", newRow, newCol);
+
+        // calculate new index with the new (row, col values)
+        newIdx = get_index(newRow, newCol, width, height);
+
+        // insert pixel into the new array
+        rotated[newIdx] = original[idx];
+
+        // image_print(rotated, width, height);
+    }
+
+    // return resulting array
+    return rotated;
+}
+
+// MAIN FUNCTION
+pixel_t[] rotate(pixel_t[] pixels, int width, int height)
+//@requires is_valid_imagesize(width, height);
+//@requires width == height && \length(pixels) == width * height;
+//@ensures \result != pixels;
+//@ensures \length(\result) == (width + height) * (width + height);
+{
+    // variable and array declarations
+    int newWidth = width + height; 
+    int newHeight = newWidth;
+    int currRow = 0; 
+    int currCol = 0; 
+    int currIdx = 0;
+    pixel_t[] end = alloc_array(pixel_t, newWidth * newHeight);
+
+    // create top left image (rotate 90 ccw)
+    pixel_t[] portion = ccw(pixels, width, height);
+
+    // insert rotated image into top left of resulting array
+    end = insert(portion, end, width, height, currRow, currCol, currIdx, 0);
+
+    // update variables for top right image
+    currRow = 0;
+    currCol = width;
+    currIdx = 0;
+
+    // insert original image into top right of resulting array
+    end = insert(pixels, end, width, height, currRow, currCol, currIdx, 1);
+
+    // update variables for bottom left image
+    currRow = height;
+    currCol = 0;
+    currIdx = 0;
+
+    // create bottom left image (rotate 180)
+    portion = ccw(portion, width, height);
+
+    // insert rotated image into bottom left of resulting array
+    end = insert(portion, end, width, height, currRow, currCol, currIdx, 2);
+
+    // update variables for bottom right image
+    currRow = height;
+    currCol = width;
+    currIdx = 0;
+
+    // create bottom right image (rotate 90 cw)
+    portion = ccw(portion, width, height);
+
+    // insert rotated image into bottom right of resulting array
+    end = insert(portion, end, width, height, currRow, currCol, currIdx, 3);
+
+    // return resulting array
+    return end;
+}

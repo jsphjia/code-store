@@ -1,0 +1,167 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/* The pixel interface describes the pixel type. It also defines
+   five functions: get_red(p), get_green(p), get_blue(p),
+   get_alpha(p), and make_pixel(a,r,g,b).  If you're *given* a
+   working pixel library, you can use the pixel interface
+   without knowing how pixels are represented.
+
+   When writing this file, only use the pixel interface.  We'll
+   check your code by compiling and running it against different
+   implementations of the pixel interface.
+
+   There are  tasks in this file:
+    - Task 1 - Implement quantize() as described in the writeup
+    - Task 2 - Testing quantize()
+*/
+
+/* Task 1 - Implement quantize() as described in the writeup */
+
+//helper
+int power(int b, int p)
+{
+  if(b == 0 || b == 1) return 1;
+  
+  int res = 1;
+
+  for(int i = 0; i < p; i++){
+    res *= b;
+  }
+
+  return res;
+}
+
+pixel_t quantize(pixel_t p, int q)
+//@requires 0 <= q && q <= 8;
+{
+  // Implement me!
+  //edge cases
+  if(q == 0) return p;
+  if(q == 8) return make_pixel(get_alpha(p), 0, 0, 0);
+
+  int cR = get_red(p); int cG = get_green(p); int cB = get_blue(p);
+  int nR = 0; int nG = 0; int nB = 0;
+
+  for(int pow = 7; pow > q - 1; pow--){
+    int cVal = power(2, pow);
+    if(cR >= cVal){
+      nR += cVal;
+      cR -= cVal;
+    }
+    if(cG >= cVal){
+      nG += cVal;
+      cG -= cVal;
+    }
+    if(cB >= cVal){
+      nB += cVal;
+      cB -= cVal;
+    }
+  }
+  
+
+  //variables
+  return make_pixel(get_alpha(p), nR, nG, nB);
+}
+
+/* Task 2 - Testing quantize()
+
+   Write some more tests for quantize. Remember to respect the pixels
+   interface! We *will* run these tests, and will grade them based on
+   their ability to catch buggy implementations of quantize.
+*/
+
+void test_quantize() {
+  pixel_t p = quantize(make_pixel(0xFF, 0xFF, 0xFF, 0xFF), 4);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p)   == 0xF0);
+  assert(get_green(p) == 0xF0);
+  assert(get_blue(p)  == 0xF0);
+  print("Test 1 Successful\n");
+
+  // More tests ...
+  p = quantize(make_pixel(0x00, 0x00, 0x00, 0x00), 0);
+  assert(get_alpha(p) == 0x00);
+  assert(get_red(p)   == 0x00);
+  assert(get_green(p) == 0x00);
+  assert(get_blue(p)  == 0x00);
+  print("Test 2 Successful\n");
+
+  p = quantize(make_pixel(0xFF, 0xFF, 0xFF, 0xFF), 8);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p)   == 0x00);
+  assert(get_green(p) == 0x00);
+  assert(get_blue(p)  == 0x00);
+  print("Test 3 Successful\n");
+
+  p = quantize(make_pixel(0xFF, 0xFF, 0xFF, 0xFF), 7);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p)   == 0x80);
+  assert(get_green(p) == 0x80);
+  assert(get_blue(p)  == 0x80);
+  print("Test 4 Successful\n");
+
+  p = quantize(make_pixel(0xFF, 0xFF, 0xFF, 0xFF), 5);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p)   == 0xE0);
+  assert(get_green(p) == 0xE0);
+  assert(get_blue(p)  == 0xE0);
+  print("Test 5 Successful\n");
+
+  p = quantize(make_pixel(0xFF, 0xFF, 0xFF, 0xFF), 3);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p)   == 0xF8);
+  assert(get_green(p) == 0xF8);
+  assert(get_blue(p)  == 0xF8);
+  print("Test 6 Successful\n");
+
+  p = quantize(make_pixel(0xFF, 0xFF, 0xFF, 0xFF), 1);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p)   == 0xFE);
+  assert(get_green(p) == 0xFE);
+  assert(get_blue(p)  == 0xFE);
+  print("Test 7 Successful\n");
+
+  p = quantize(make_pixel(0xFF, 0x0F, 0xC3, 0x35), 4);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p)   == 0x00);
+  assert(get_green(p) == 0xC0);
+  assert(get_blue(p)  == 0x30);
+  print("Test 8 Successful\n");
+
+  p = quantize(make_pixel(0x00, 0xFF, 0xFF, 0xFF), 8);
+  assert(get_alpha(p) == 0x00);
+  assert(get_red(p)   == 0x00);
+  assert(get_green(p) == 0x00);
+  assert(get_blue(p)  == 0x00);
+  print("Test 9 Successful\n");
+
+  p = quantize(make_pixel(0xFF, 0xAF, 0xAF, 0xAF), 5);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p)   == 0xA0);
+  assert(get_green(p) == 0xA0);
+  assert(get_blue(p)  == 0xA0);
+  print("Test 10 Successful\n");
+
+  p = quantize(make_pixel(0x00, 0x10, 0x10, 0x10), 5);
+  assert(get_alpha(p) == 0x00);
+  assert(get_red(p)   == 0x00);
+  assert(get_green(p) == 0x00);
+  assert(get_blue(p)  == 0x00);
+  print("Test 11 Successful\n");
+
+  p = quantize(make_pixel(0x00, 0xFF, 0xFF, 0xFF), 0);
+  assert(get_alpha(p) == 0x00);
+  assert(get_red(p)   == 0xFF);
+  assert(get_green(p) == 0xFF);
+  assert(get_blue(p)  == 0xFF);
+  print("Test 12 Successful\n");
+
+  p = quantize(make_pixel(0x00, 0xAF, 0xAF, 0xAF), 6);
+  assert(get_alpha(p) == 0x00);
+  assert(get_red(p)   == 0x80);
+  assert(get_green(p) == 0x80);
+  assert(get_blue(p)  == 0x80);
+  print("Test 13 Successful\n");
+}

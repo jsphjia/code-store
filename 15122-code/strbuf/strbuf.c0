@@ -1,0 +1,114 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * String Buffer Library
+ *
+ * 15-122 Principles of Imperative Computation
+ * This version exposes the externals, requires
+ * discipline from client! */
+
+#use <conio>
+#use <string>
+#use <util>
+
+/*** Interface ***/
+
+struct strbuf_header {
+  int limit;
+  int len;
+  char[] buf;
+};
+typedef struct strbuf_header strbuf;
+
+bool is_strbuf(strbuf* sb);
+
+strbuf* strbuf_new(int init_limit);
+char[] strbuf_str(strbuf* sb);
+void strbuf_add(strbuf* sb, char[] str, int len);
+void strbuf_addstr(strbuf* sb, char[] str);
+
+/*** Implementation ***/
+
+bool is_strbuf(strbuf* sb)
+{
+  // NULL check
+  if(sb == NULL) return false;
+  
+  if(sb->limit <= 0 || sb->limit < sb->len + 1) return false;
+  if(sb->len < 0) return false;
+
+  // [0, len) should be non-NUL char
+  // [0, len] should be a NUL-terminated string
+  for(int i = 0; i < sb->len; i++) if(sb->buf[i] == '\0') return false;
+  if(sb->buf[sb->len] != '\0') return false;
+
+  //@assert \length(sb->buf) == sb->limit;
+
+  return true;
+}
+
+// creates a new strbuf
+strbuf* strbuf_new(int init_limit)
+//@requires init_limit > 0;
+//@ensures is_strbuf(\result);
+{
+  // create strbuf
+  strbuf* sb = alloc(strbuf);
+  char[] buf = alloc_array(char, init_limit);
+  sb->limit = init_limit;
+  sb->len = 0;
+  sb->buf = buf;
+
+  // return strbuf
+  return sb;
+}
+
+// returns buf from sb
+char[] strbuf_str(strbuf* sb)
+//@requires is_strbuf(sb);
+//@ensures \length(\result) == sb->len + 1;
+{
+  // create resulting array
+  char[] res = alloc_array(char, sb->len + 1);
+
+  // iterate through array until NUL char
+  for(int i = 0; i < sb->len; i++) res[i] = sb->buf[i];
+  res[sb->len] = '\0';
+
+  return res;
+}
+
+// adds str (with known length) to sb->buf 
+void strbuf_add(strbuf* sb, char[] str, int str_len)
+//@requires is_strbuf(sb);
+//@requires string_length(string_from_chararray(str)) == str_len;
+//@requires sb->len + str_len <= int_max()/2;
+{
+  // determine if additional allocation is needed
+  if(sb->len + str_len + 1 > sb->limit)
+  {
+    // create a new large enough array
+    char[] newBuf = alloc_array(char, 2 * (sb->len + str_len));
+
+    // add the char from sb->buf to newBuf
+    for(int i = 0; i < sb->len; i++) newBuf[i] = sb->buf[i];
+    for(int j = 0; j < str_len; j++) newBuf[sb->len + j] = str[j];
+
+    sb->buf = newBuf;
+    sb->limit = 2 * (sb->len + str_len);
+  }
+  // otherwise, add to original sb->buf
+  else for(int i = 0; i < str_len; i++) sb->buf[sb->len + i] = str[i];
+
+  sb->len += str_len;
+  sb->buf[sb->len] = '\0';
+}
+
+// adds str (with unknown length) to sb->buf 
+void strbuf_addstr(strbuf* sb, char[] str)
+//@requires is_strbuf(sb);
+{
+  strbuf_add(sb, str, string_length(string_from_chararray(str)));
+}

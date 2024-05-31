@@ -1,0 +1,146 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <string>
+#use <conio>
+
+// You are welcome to define helper functions for your tests
+
+int main() 
+{
+  // task 1
+  strbuf* B = strbuf_new(1);
+  assert(is_strbuf(B)); // normal 
+  B->len = 2;
+  assert(!is_strbuf(B)); // incorrect limit
+  B->limit = 2;
+  assert(!is_strbuf(B)); // correct limit
+  B->limit = 3;
+  B->buf = string_to_chararray("hi");
+  assert(is_strbuf(B));
+  B = NULL;
+  assert(!is_strbuf(B)); // null strbuf
+
+  B = strbuf_new(10);
+  strbuf_addstr(B, string_to_chararray("hello"));
+  assert(is_strbuf(B)); // valid add
+  B->len = 4;
+  assert(!is_strbuf(B)); // invalid len (too short)
+  B->len = 8;
+  assert(!is_strbuf(B)); // invalid len (too long)
+  B->len = 5;
+  B->buf[4] = '\0';
+  assert(!is_strbuf(B));
+  B->buf[4] = 'o';
+  B->buf[5] = 'h';
+  assert(!is_strbuf(B));
+  B->limit = -1;
+  assert(!is_strbuf(B));
+  B->limit = 10;
+  B->len = -1;
+  assert(!is_strbuf(B));
+
+  // task 2 + 3
+  strbuf* C = strbuf_new(1);
+  assert(C->limit == 1);
+  assert(C->len == 0);
+  assert(C->buf[0] == '\0');
+
+  C = strbuf_new(100);
+  assert(C->limit == 100);
+  assert(C->len == 0);
+  assert(C->buf[0] == '\0');
+
+  C = strbuf_new(20);
+  strbuf_addstr(C, string_to_chararray("interested"));
+  char[] res = strbuf_str(C);
+  assert(res[0] == 'i');
+  assert(res[1] == 'n');
+  assert(res[2] == 't');
+  assert(res[3] == 'e');
+  assert(res[4] == 'r');
+  assert(res[5] == 'e');
+  assert(res[6] == 's');
+  assert(res[7] == 't');
+  assert(res[8] == 'e');
+  assert(res[9] == 'd');
+  assert(res[10] == '\0');
+
+  C = strbuf_new(1);
+  res = strbuf_str(C);
+  assert(is_strbuf(C));
+  assert(res[0] == '\0');
+
+  C = strbuf_new(10);
+  strbuf_addstr(C, string_to_chararray("hello"));
+  res = strbuf_str(C);
+  assert(is_strbuf(C));
+  assert(C->len == 5);
+  assert(res[0] == 'h');
+  assert(res[1] == 'e');
+  assert(res[2] == 'l');
+  assert(res[3] == 'l');
+  assert(res[4] == 'o');
+  assert(res[5] == '\0');
+
+  strbuf_add(C, string_to_chararray("hi"), 2);
+  res = strbuf_str(C);
+  assert(is_strbuf(C));
+  assert(C->len == 7);
+  assert(res[0] == 'h');
+  assert(res[1] == 'e');
+  assert(res[2] == 'l');
+  assert(res[3] == 'l');
+  assert(res[4] == 'o');
+  assert(res[5] == 'h');
+  assert(res[6] == 'i');
+  assert(res[7] == '\0');
+
+  strbuf_addstr(C, string_to_chararray("hi"));
+  res = strbuf_str(C);
+  assert(is_strbuf(C));
+  assert(C->len == 9);
+  assert(res[0] == 'h');
+  assert(res[1] == 'e');
+  assert(res[2] == 'l');
+  assert(res[3] == 'l');
+  assert(res[4] == 'o');
+  assert(res[5] == 'h');
+  assert(res[6] == 'i');
+  assert(res[7] == 'h');
+  assert(res[8] == 'i');
+  assert(res[9] == '\0');
+
+  strbuf_add(C, string_to_chararray("t"), 1);
+  res = strbuf_str(C);
+  assert(is_strbuf(C));
+  assert(C->len == 10);
+  assert(C->limit > 10);
+  assert(res[0] == 'h');
+  assert(res[1] == 'e');
+  assert(res[2] == 'l');
+  assert(res[3] == 'l');
+  assert(res[4] == 'o');
+  assert(res[5] == 'h');
+  assert(res[6] == 'i');
+  assert(res[7] == 'h');
+  assert(res[8] == 'i');
+  assert(res[9] == 't');
+  assert(res[10] == '\0');
+
+  strbuf* D = strbuf_new(5);
+  D->len = 1;
+  D->buf[0] = 'a';
+  D->buf[1] = '\0';
+  D->buf[2] = 'b';
+  D->buf[3] = 'c';
+  D->buf[4] = 'd';
+  strbuf_addstr(D, string_to_chararray("hey"));
+  assert(string_equal(string_from_chararray(D->buf), "ahey"));
+  assert(D->len == 4);
+  assert(D->limit == 5);  
+
+  printf("All tests passed!\n");
+  return 0;
+}

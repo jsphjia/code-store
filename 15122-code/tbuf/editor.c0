@@ -1,0 +1,205 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * Augment doubly linked lists with row and column information.
+ *
+ * 15-122 Principles of Imperative Computation */
+
+/*** Interface ***/
+
+typedef struct editor_header editor;
+struct editor_header {
+  tbuf* buffer;
+  int row;
+  int col;
+};
+
+bool is_editor(editor* E);
+
+editor* editor_new();                  /* Creates a new, empty text buffer */
+void editor_forward(editor* E);        /* Moves the cursor forward (right) */
+void editor_backward(editor* E);       /* Moves the cursor backward (left) */
+void editor_insert(editor* E, char c); /* Insert a character before cursor */
+void editor_delete(editor* E);         /* Remove character before cursor   */
+void editor_up(editor* E);             /* Moves the cursor up              */
+void editor_down(editor* E);           /* Moves the cursor down            */
+
+/*** Implementation ***/
+
+bool is_editor(editor* E)
+{
+  return E != NULL && is_tbuf(E->buffer) &&
+         E->row == tbuf_row(E->buffer) && 
+         E->col == tbuf_col(E->buffer);
+}
+
+// creates a new empty text buffer
+editor* editor_new()
+//@ensures is_editor(\result);
+{
+  editor* E = alloc(editor);
+
+  E->buffer = tbuf_new();
+  E->row = 1;
+  E->col = 0;
+
+  return E;
+}
+
+// moves cursor forward
+void editor_forward(editor* E)
+//@requires is_editor(E);
+{
+  if(tbuf_at_right(E->buffer)) return;
+  // move forward
+  bool newline = false;
+  if(E->buffer->cursor->data == '\n') newline = true;
+  tbuf_forward(E->buffer);
+
+  // update cursor location
+  if(newline)
+  {
+    E->row++;
+    E->col = 0;
+  }
+  else E->col++;
+}
+
+// moves cursor backward
+void editor_backward(editor* E)
+//@requires is_editor(E);
+{
+  if(tbuf_at_left(E->buffer)) return;
+  // move backward
+  tbuf_backward(E->buffer);
+  bool newline = false;
+  if(E->buffer->cursor->data == '\n') newline = true;
+
+  // update cursor location
+  if(newline)
+  {
+    E->row--;
+    E->col = tbuf_col(E->buffer);
+  }
+  else E->col--;
+}
+
+// insert char before cursor
+void editor_insert(editor* E, char c)
+//@requires is_editor(E);
+{
+  // insert char
+  tbuf_insert(E->buffer, c);
+
+  // update cursor location
+  if(c == '\n')
+  {
+    E->row++;
+    E->col = 0;
+  }
+  else E->col++;
+}
+
+// removes char before cursor
+void editor_delete(editor* E)
+//@requires is_editor(E);
+{
+  if(tbuf_at_left(E->buffer)) return;
+
+  bool newline = false;
+  if(E->buffer->cursor->prev->data == '\n') newline = true;
+  // remove char
+  tbuf_delete(E->buffer);
+
+  // update cursor location
+  if(newline)
+  {
+    E->row--;
+    E->col = tbuf_col(E->buffer);
+  }
+  else E->col--;
+}
+
+// Bonus: Implement these function if you do the bonus task
+
+int max_rows(tbuf* B)
+//@requires is_tbuf(B);
+//@ensures \result >= 1;
+{
+  // variable declaration
+  int rows = 1;
+  dll* currNode = B->start;
+
+  // loop through entire tbuf to count rows
+  while(currNode != B->end)
+  {
+    // check if there is a newline
+    if(currNode->data == '\n') rows++;
+
+    // iterate to next node
+    currNode = currNode->next;
+  }
+
+  return rows;
+}
+
+// makes cursor go up one row
+void editor_up(editor* E)
+//@requires is_editor(E);
+{
+  if(E->row == 1) return;
+  // variable delcarations
+  int targetCol = E->col;
+  int currCol = 0;
+  dll* currNode = E->buffer->cursor->prev;
+
+  // get to target row
+  while(currNode->data != '\n') currNode = currNode->prev;
+
+  E->buffer->cursor = currNode;
+  currCol = tbuf_col(E->buffer);
+
+  // iterate to right col
+  while(currCol > targetCol && currNode->prev->data != '\n')
+  {
+    currCol--;
+    currNode = currNode->prev;
+  }
+  
+  E->buffer->cursor = currNode;
+  E->row--;
+  E->col = currCol;
+}
+
+// makes cursor go down one row
+void editor_down(editor* E)
+//@requires is_editor(E);
+{
+  if(E->row >= max_rows(E->buffer)) return;
+  // variable delcaration
+  int targetCol = E->col;
+  int currCol = 0;
+  dll* currNode = E->buffer->cursor;
+
+  // loop through tbuf until a newline
+  while(currNode->data != '\n') currNode = currNode->next;
+
+  // go to next line
+  currNode = currNode->next;
+
+  // increment col until newline character or targetCol
+  while(currNode != E->buffer->end && 
+        currNode->data != '\n' && 
+        currCol < targetCol)
+  {
+    currNode = currNode->next;
+    currCol++;
+  }
+
+  // update cursor vals
+  E->buffer->cursor = currNode;
+  E->row++;
+  E->col = currCol;
+}

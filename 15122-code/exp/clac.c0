@@ -1,0 +1,83 @@
+#use <util>
+
+int valid_pow(int base, int exp)
+{
+    if(exp < 0) error("exponent must be positive!");
+    if(exp == 0) return 1;
+    if(exp == 1) return base;
+    int result = 1;
+    for(int i = 0; i < exp; i++) result *= base;
+    return result;
+}
+
+int valid_div(int x, int y)
+{
+    if(y == 0) error("can't divide by 0!");
+    else if(x == (valid_pow(2, 31) * -1) && y == -1) error("can't do this!");
+    else return x / y;
+}
+
+int stack_size(istack_t S)
+//@requires S != NULL;
+//@ensures \result >= 0;
+{
+    int count = 0;
+    istack_t temp = istack_new();
+    while(!istack_empty(S)) 
+    {
+        ipush(temp, ipop(S));
+        count++;
+    }
+    while(!istack_empty(temp)) ipush(S, ipop(temp));
+    return count;
+}
+
+// MAIN FUNCTIONS
+void eval(istack_t S, queue_t Q)  
+//@requires S != NULL && Q != NULL;  
+//@ensures queue_empty(Q);  
+{
+    // variable declarations
+    string next = "";
+    int val1 = 0;
+    int val2 = 0;
+    int* next_int = alloc(int);
+
+    // loop until queue empty
+    while(!queue_empty(Q))
+    {
+        // deq() the first val
+        next = deq(Q);
+        bool add = string_equal(next, "+");
+        bool subtract = string_equal(next, "-");
+        bool mult = string_equal(next, "*");
+        bool divide = string_equal(next, "/");
+        bool pow = string_equal(next, "**");
+        bool is_operator = add || subtract || mult || divide || pow;
+
+        // check for at least 2 elements in stack to compute
+        if(stack_size(S) < 2 && is_operator)
+        {
+            error("not enough int to compute");
+        }
+        // if operator, eval
+        if(is_operator)
+        {
+            val2 = ipop(S);
+            val1 = ipop(S);
+            if(add) ipush(S, val1 + val2);
+            else if(subtract) ipush(S, val1 - val2);
+            else if(mult) ipush(S, val1 * val2);
+            else if(divide) ipush(S, valid_div(val1, val2));
+            else if(pow) ipush(S, valid_pow(val1, val2));
+        }
+        else if (parse_int(next, 10) == NULL) error("invalid token");
+        // else, push numerical val to top of stack
+        // convert string to int to push
+        else
+        {
+            next_int = parse_int(next, 10);
+            ipush(S, *next_int);
+        }
+    }
+}

@@ -1,0 +1,120 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+/*
+ * Interface for dictionaries
+ *
+ * 15-122 Principles of Imperative Computation
+ */
+
+#use <string>
+#use <conio>
+
+/************************************************************************/
+/************************* BEGIN IMPLEMENTATION *************************/
+
+typedef struct dict_header dict;
+
+/************ insert your implementation code between HERE ************/
+struct dict_header {
+  // Write your own fields here!
+  string operator;
+  int precedence;
+  dict* next;
+};
+
+bool is_dict(dict* D)
+{
+  return D != NULL;
+}
+
+dict* dict_new(string[] A, int n)
+//@requires \length(A) == n;
+//@requires is_infix_array(A, n);
+//@ensures is_dict(\result); // *** MODIFICATION FOR STYLE ***
+{
+  // varibale declarations
+  dict* D = alloc(dict);
+
+  // edge case when n = 0
+  // create non-NULL dict
+  if(n == 0)
+  {
+    D->operator = "";
+    D->precedence = 0;
+  }
+  // insert vales into dict
+  // if already in dict, then return NULL
+  else
+  {
+    // create initial dict
+    dict* curr = D;
+    
+    for(int i = 0; i < n; i++)
+    {
+      // parse arguments from each index of array
+      string[] new_ops = parse_tokens(A[i]);
+      int num_ops = num_tokens(A[i]);
+
+      for(int j = 0; j < num_ops; j++)
+      {
+        // check if operator is a duplicate
+        while(curr->next != NULL)
+        {
+          if(string_equal(new_ops[j], curr->operator)) return NULL;
+          curr = curr->next;
+        }
+
+        // create a new dict element for new op
+        dict* new_dict = alloc(dict);
+        new_dict->operator = new_ops[j];
+        new_dict->precedence = i;
+        curr->next = new_dict;
+
+        // reset curr
+        curr = D;
+      }
+    }
+  }
+
+  return D;
+}
+
+int dict_lookup(dict* D, string oper)
+//@requires D != NULL;
+//@ensures \result >= -1;
+{
+  dict* curr = D;
+  while(curr != NULL)
+  {
+    if(string_equal(curr->operator, oper)) return curr->precedence;
+    curr = curr->next;
+  }
+  return -1;
+}
+
+// Advice: implementing a dict_print function may help you debug
+
+/****************************** and HERE ******************************/
+typedef dict* dict_t;
+
+/************************** END IMPLEMENTATION **************************/
+/************************************************************************/
+
+/* Interface of dictionaries (leave this alone) */
+
+/************************************************************************/
+/******************************* Interface ******************************/
+
+// typedef ______* dict_t;
+
+// Returns NULL if the input array has the same operator twice
+dict_t dict_new(string[] A, int n)
+  /*@requires \length(A) == n; @*/
+  /*@requires is_infix_array(A, n); @*/ ;
+
+// Returns -1 if no definition is found
+int dict_lookup(dict_t D, string oper)
+  /*@requires D != NULL; @*/
+  /*@ensures \result >= -1; @*/ ;

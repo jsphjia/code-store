@@ -1,0 +1,168 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+// Allows you to use I/O functions like printf
+#use <conio>
+// Allows you to use string functions like string_join
+#use <string>
+// Allows you to use utility functions like abs() and min()
+#use <util>
+
+bool is_substring(string little, string big) {
+  int len = string_length(little);
+  int offset = string_length(big) - len;
+  while (offset >= 0)
+  //@loop_invariant offset <= string_length(big) - string_length(little);
+  {
+    if (string_equal(little, string_sub(big, offset, offset+len)))
+      return true;
+    offset--;
+  }
+  return false;
+}
+
+int f(string s1, string s2)
+//@ensures 0 <= \result && \result <= string_length(s1);
+//@ensures 0 <= \result && \result <= string_length(s2);
+//@ensures string_equal(string_sub(s1, 0, \result), string_sub(s2, 0, \result));
+/*@ensures \result == string_length(s1)
+        || \result == string_length(s2)
+        || string_charat(s1, \result) != string_charat(s2, \result); @*/
+{
+  //PURPOSE: finding longest common substring of s1 + s2 starting from 0th index  
+  //variables
+  int len1 = string_length(s1);
+  int len2 = string_length(s2);
+  int length = len1;
+  int curr = 0;
+  char s1_curr;
+  char s2_curr;
+
+  //edge cases
+  if(len1 == 0 || len2 == 0) return 0;
+  else if(string_equal(s1, s2) || is_substring(s1, s2)) return len1;
+  else if(is_substring(s2, s1)) return len2;
+  //find the shorter string
+  else if(len1 > len2) {
+    length = len2;
+  }
+
+  //set variables
+  s1_curr = string_charat(s1, curr);
+  s2_curr = string_charat(s2, curr);
+
+  //while loop until different characters
+  while(s1_curr == s2_curr && curr < length - 1)
+  //@loop_invariant curr <= length;
+  {
+    curr++;
+    s1_curr = string_charat(s1, curr);
+    s2_curr = string_charat(s2, curr);
+  }
+
+  return curr;
+}
+
+int g(string s)
+//@requires string_length(s) > 0;
+//@requires string_charat(s, 0) != string_charat(s, string_length(s) - 1);
+//@ensures 0 <= \result && \result < string_length(s)-1;
+//@ensures string_charat(s, \result) == string_charat(s, 0);
+//@ensures string_charat(s, \result+1) != string_charat(s, 0);
+{
+  //PURPOSE: find an occurrance of the first char of the string that isn't a double occurance
+  //variables
+  int len = string_length(s);
+  int fnd_idx = 0;
+  char target = string_charat(s, 0);
+  char curr;
+  char next;
+  bool found = false;
+
+  curr = string_charat(s, 0);
+  next = string_charat(s, 1);
+
+  //loop through the string
+  for(int idx = 1; idx < len - 1; idx++)
+  //@loop_invariant idx >= 0;
+  {
+    curr = string_charat(s, idx);
+    next = string_charat(s, idx + 1);
+    if(curr == target && next != target){
+      found = true;
+      fnd_idx = idx;
+    }
+  }
+
+  return fnd_idx;
+}
+
+string h(string s)
+//@ensures is_substring(\result, s);
+/*@ensures string_length(s) < 128
+        || (string_length(\result) > 1
+            && string_charat(\result, 0)
+               == string_charat(\result, string_length(\result) - 1)); @*/
+{
+  //PURPOSE: find a substring with the same first and last char in the string s if len(s) >= 128
+  //edge cases
+  if(string_length(s) < 128) return s;
+  
+  //variables
+  int idx = 0;
+  int idx2 = 1;
+  int len = string_length(s);
+  string curr = string_sub(s, 0, 1);
+  string rest = string_sub(s, 1, len);
+  bool found = false;
+  
+  //search through string to find a palindrome
+  //use is_substring fn to find if there is a duplicate
+  while(!found && idx < len - 1){
+    if(is_substring(curr, rest)){
+      while(!found && idx2 < len){
+        if(string_charat(s, idx) == string_charat(s, idx2)){
+          found = true;
+        }
+        else idx2++;
+      }
+    }
+    if(!found){
+    idx++;
+    idx2 = idx + 1;
+    curr = string_sub(s, idx, idx + 1);
+    rest = string_sub(s, idx2, len);
+    }
+  }
+
+  return string_sub(s, idx, idx2 + 1);
+}
+
+
+
+
+/**************** DO NOT CHANGE THE CODE BELOW THIS LINE ********************/
+
+int f(string s1, string s2)
+/*@ensures 0 <= \result && \result <= string_length(s1);                   @*/
+/*@ensures 0 <= \result && \result <= string_length(s2);                   @*/
+/*@ensures string_equal(string_sub(s1, 0, \result),
+                        string_sub(s2, 0, \result));                       @*/
+/*@ensures \result == string_length(s1)
+        || \result == string_length(s2)
+        || string_charat(s1, \result) != string_charat(s2, \result);       @*/ ;
+
+int g(string s)
+/*@requires string_length(s) > 0;                                          @*/
+/*@requires string_charat(s, 0) != string_charat(s, string_length(s) - 1); @*/
+/*@ensures 0 <= \result && \result < string_length(s)-1;                   @*/
+/*@ensures string_charat(s, \result) == string_charat(s, 0);               @*/
+/*@ensures string_charat(s, \result+1) != string_charat(s, 0);             @*/ ;
+
+string h(string s)
+/*@ensures is_substring(\result, s);                                       @*/
+/*@ensures string_length(s) < 128
+        || (string_length(\result) > 1
+           && string_charat(\result, 0)
+               == string_charat(\result, string_length(\result) - 1));     @*/ ;

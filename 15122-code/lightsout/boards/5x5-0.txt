@@ -1,0 +1,6 @@
+5x5
+O#OOO
+#OOOO
+####O
+OOO#O
+OO#OO

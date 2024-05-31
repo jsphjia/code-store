@@ -1,0 +1,15 @@
+#use <string>
+
+int hash_string(string s) 
+{
+    int len = string_length(s);
+    int sum = 0;
+
+    for(int i = 0; i < len; i++)
+    {
+        sum *= 32;
+        sum += char_ord(string_charat(s, i));
+    }
+
+    return sum; // IMPLEMENT ME
+}

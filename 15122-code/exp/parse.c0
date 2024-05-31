@@ -1,0 +1,99 @@
+bool is_precstack(dict_t D, stack_t S)  
+//@requires D != NULL && S != NULL;
+{
+    // edge case
+    if(stack_empty(S)) return true;
+
+    // variable declarations
+    int currPrec;
+    int prevPrec;
+    string oper;
+    stack_t temp = stack_new();
+
+    // get first operation values
+    oper = pop(S);
+    prevPrec = dict_lookup(D, oper);
+    push(temp, oper);
+
+    if(prevPrec == -1) return false;
+
+    // loop thorugh rest of stack
+    while(!stack_empty(S))
+    {
+        oper = pop(S);
+        currPrec = dict_lookup(D, oper);
+
+        // if not precstack
+        if(prevPrec <= currPrec || currPrec == -1)
+        {
+            while(!stack_empty(temp)) push(S, pop(temp));
+            return false;
+        }
+
+        prevPrec = currPrec;
+    }
+
+    // remake stack
+    while(!stack_empty(temp)) push(S, pop(temp));
+
+    return true;
+}
+
+queue_t parse(dict_t D, queue_t input)  
+//@requires D != NULL && input != NULL;  
+//@ensures \result == NULL || queue_empty(input);
+{
+    // variable declarations
+    queue_t output = queue_new();
+    stack_t ops = stack_new();
+    bool intPhase = true;
+    string next;
+    string top;
+    int val;
+    
+    while(!queue_empty(input))
+    {
+        // get next from input
+        next = deq(input);
+        val = dict_lookup(D, next);
+
+        // integer phase
+        if(intPhase)
+        {
+            // check that it is an int
+            if(val != -1) return NULL;
+
+            enq(output, next);
+            intPhase = false;
+        }
+        // operator phase
+        else
+        {
+            // check that it is an operator
+            if(val == -1) return NULL;
+
+            if(stack_empty(ops)) push(ops, next);
+            else
+            {
+                top = pop(ops);
+                while(!stack_empty(ops) && 
+                      dict_lookup(D, top) >= dict_lookup(D, next))
+                {
+                    enq(output, top);
+                    top = pop(ops);
+                }
+                if(stack_empty(ops) && 
+                   dict_lookup(D, top) >= dict_lookup(D, next)) enq(output,top);
+                else push(ops, top);
+                push(ops, next);
+            }
+            intPhase = true;
+        }
+    }
+
+    // pop off remaining ops
+    while(!stack_empty(ops)) enq(output, pop(ops));
+
+    //return output
+    return output;
+}

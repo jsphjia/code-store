@@ -1,0 +1,233 @@
+/*
+ * Binary search tree without balancing
+ *
+ * 15-122 Principles of Imperative Computation
+ */
+
+
+// LOOK FOR ##### BELOW FOR WHERE TO WRITE YOUR CODE
+
+
+#use <util>
+
+/************************************************************************/
+/**************************** Client Interface **************************/
+
+typedef void* elem;
+typedef int compare_fn(elem e1, elem e2)
+        /*@requires e1 != NULL && e2 != NULL; @*/ ;
+
+/************************* End Client Interface *************************/
+/************************************************************************/
+
+/************************************************************************/
+/************************ Library Implementation ************************/
+
+typedef struct tree_node tree;
+struct tree_node {
+  elem data;
+  tree* left;
+  tree* right;
+};
+
+typedef struct bst_header bst;
+struct bst_header {
+  tree* root;
+  compare_fn* compare;
+};
+
+/* is_ordered(T, lower, upper) checks if all elements in T
+ * are strictly in the interval (elem_key(lower),elem_key(kupper)).
+ * lower = NULL represents -infinity; upper = NULL represents +infinity
+ */
+bool is_ordered(tree* T, elem lower, elem upper, compare_fn* compare)
+//@requires compare != NULL;
+{
+  if (T == NULL) return true;
+  if (T->data == NULL) return false;
+  elem mid = T->data;
+  if (!(lower == NULL || (*compare)(lower, mid) < 0))
+    return false;
+  if (!(upper == NULL || (*compare)(mid, upper) < 0))
+    return false;
+  return is_ordered(T->left, lower, mid, compare)
+    && is_ordered(T->right, mid, upper, compare);
+}
+
+bool is_tree(tree* T, compare_fn* compare)
+//@requires compare != NULL;
+{
+  return is_ordered(T, NULL, NULL, compare);
+}
+
+bool is_bst(bst* B) {
+  return B != NULL
+    && B->compare != NULL
+    && is_tree(B->root, B->compare);
+}
+
+bst* bst_new(compare_fn* compare)
+//@requires compare != NULL;
+//@ensures is_bst(\result);
+{
+  bst* B = alloc(struct bst_header);
+  B->root = NULL;
+  B->compare = compare;
+  return B;
+}
+
+/* tree_insert(T, e, compare) returns the modified tree
+ * this avoids some complications in case T = NULL
+ */
+tree* tree_insert(tree* T, elem e, compare_fn* compare)
+//@requires e != NULL && compare != NULL && is_tree(T, compare);
+//@ensures is_tree(\result, compare);
+{
+  if (T == NULL) {
+    /* create new node and return it */
+    T = alloc(struct tree_node);
+    T->data = e;
+    T->left = NULL; T->right = NULL;
+    return T;
+  }
+  int r = (*compare)(e, T->data);
+  if (r == 0) {
+    T->data = e;               /* modify in place */
+  } else if (r < 0) {
+    T->left = tree_insert(T->left, e, compare);
+  } else {
+    //@assert r > 0;
+    T->right = tree_insert(T->right, e, compare);
+  }
+  return T;
+}
+
+void bst_insert(bst* B, elem e)
+//@requires is_bst(B);
+//@requires e != NULL;
+//@ensures is_bst(B);
+{
+  B->root = tree_insert(B->root, e, B->compare);
+  return;
+}
+
+elem tree_lookup(tree* T, elem e, compare_fn* compare)
+//@requires compare != NULL && is_tree(T, compare);
+//@ensures \result == NULL || (*compare)(\result, e) == 0;
+{
+  if (T == NULL) return NULL;
+  int r = (*compare)(e, T->data);
+  if (r == 0) {
+    return T->data;
+  } else if (r < 0) {
+    return tree_lookup(T->left, e, compare);
+  } else {
+    //@assert r > 0;
+    return tree_lookup(T->right, e, compare);
+  }
+}
+
+elem bst_lookup(bst* B, elem e)
+//@requires is_bst(B) && e != NULL;
+//@ensures \result == NULL || (*B->compare)(\result, e) == 0;
+{
+  return tree_lookup(B->root, e, B->compare);
+}
+
+
+// ########################################## MODIFY THIS FILE BETWEEN THIS LINE
+
+stack_t bst_traverse_start(bst* B)
+// Give me contracts!
+//@requires is_bst(B);
+{
+  if(B->root == NULL) return stack_new();
+  tree* curr = B->root;
+  stack_t S = stack_new();
+  while(curr != NULL)
+  {
+    push(S, (void*) curr);
+    curr = curr->left;
+  }
+
+  return S; // WRITE ME!
+}
+
+bool bst_traverse_finished(stack_t S)
+// Give me contracts!
+{
+  return stack_empty(S); // WRITE ME!
+}
+
+elem bst_traverse_next(stack_t S)
+//@requires !bst_traverse_finished(S);
+// Give me contracts!
+{
+  tree* curr = (tree*) pop(S);
+  elem e = curr->data;
+  if(curr->right != NULL)
+  {
+    curr = curr->right;
+    while(curr != NULL)
+    {
+      push(S, (void*) curr);
+      curr = curr->left;
+    }
+  }
+  return e; // WRITE ME!
+}
+
+bool bst_equal(bst* B1, bst* B2)
+// Give me contracts!
+//@requires is_bst(B1) && is_bst(B2);
+{
+  stack_t c1 = bst_traverse_start(B1);
+  stack_t c2 = bst_traverse_start(B2);
+  while(!bst_traverse_finished(c1) && !bst_traverse_finished(c2))
+  {
+    if((*(B1->compare))(bst_traverse_next(c1), bst_traverse_next(c2)) != 0) return false;
+  }
+
+  if(stack_empty(c1) && stack_empty(c2))return true;
+  return false;
+}
+
+// ################################ AND THIS LINE -- DO NOT MODIFY ANYTHING ELSE
+
+
+typedef struct bst_header* bst_t;
+
+/********************** END Library Implementation **********************/
+/************************************************************************/
+
+/************************************************************************/
+/*************************** Library Interface **************************/
+
+// typedef ______* bst_t;
+
+bst_t bst_new(compare_fn* compare)
+  /*@requires compare != NULL; @*/
+  /*@ensures \result != NULL; @*/ ;
+
+void bst_insert(bst_t B, elem e)
+  /*@requires B != NULL && e != NULL; @*/ ;
+
+elem bst_lookup(bst_t B, elem e)
+  /*@requires B != NULL && e != NULL; @*/ ;
+
+int bst_count(bst_t B)
+  /*@requires B != NULL; @*/ ;
+
+int bst_countifless(bst_t B, elem e)
+  /*@requires B != NULL && e != NULL; @*/ ;
+
+int bst_height(bst_t B)
+  /*@requires B != NULL; @*/ ;
+
+stack_t bst_traverse_start(bst_t B);
+
+bool bst_traverse_finished(stack_t S);
+
+elem bst_traverse_next(stack_t S);
+
+bool bst_equal(bst_t B1, bst_t B2);

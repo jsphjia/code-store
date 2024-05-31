@@ -1,0 +1,52 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <util>
+#use <conio>
+
+// You are welcome to define helper functions for your tests
+
+int main() {
+  // Test some regular cases
+  assert(make_pixel(0x00, 0x00, 0x00, 0x00) == 0x00000000);
+  assert(make_pixel(0xFF, 0xFF, 0xFF, 0xFF) == 0xFFFFFFFF);
+  assert(make_pixel(0xFF, 0x00, 0xFF, 0x00) == 0xFF00FF00);
+  assert(make_pixel(0x00, 0xFF, 0x00, 0xFF) == 0x00FF00FF);
+  assert(make_pixel(0xFF, 0x00, 0x00, 0xFF) == 0xFF0000FF);
+  assert(make_pixel(0x00, 0xFF, 0xFF, 0x00) == 0x00FFFF00);
+
+  pixel p = make_pixel(0x00, 0x00, 0x00, 0x00);
+  assert(get_alpha(p) == 0x00);
+  assert(get_red(p) == 0x00);
+  assert(get_green(p) == 0x00);
+  assert(get_blue(p) == 0x00);
+  p = make_pixel(0xFF, 0xFF, 0xFF, 0xFF);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p) == 0xFF);
+  assert(get_green(p) == 0xFF);
+  assert(get_blue(p) == 0xFF);
+  p = make_pixel(0xFF, 0x00, 0x00, 0xFF);
+  assert(get_alpha(p) == 0xFF);
+  assert(get_red(p) == 0x00);
+  assert(get_green(p) == 0x00);
+  assert(get_blue(p) == 0xFF);
+  p = make_pixel(0x00, 0xFF, 0xFF, 0x00);
+  assert(get_alpha(p) == 0x00);
+  assert(get_red(p) == 0xFF);
+  assert(get_green(p) == 0xFF);
+  assert(get_blue(p) == 0x00);
+  p = make_pixel(0x21, 0x17, 0xCD, 0xA6);
+  assert(get_alpha(p) == 0x21);
+  assert(get_red(p) == 0x17);
+  assert(get_green(p) == 0xCD);
+  assert(get_blue(p) == 0xA6);
+  p = make_pixel(0x38, 0x92, 0xFF, 0x1C);
+  assert(get_alpha(p) == 0x38);
+  assert(get_red(p) == 0x92);
+  assert(get_green(p) == 0xFF);
+  assert(get_blue(p) == 0x1C);
+
+  printf("All tests passed!\n");
+  return 0;
+}

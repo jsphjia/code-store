@@ -1,0 +1,154 @@
+/**************************************************************************/
+/*              COPYRIGHT Carnegie Mellon University 2023                 */
+/* Do not post this file or any derivative on a public site or repository */
+/**************************************************************************/
+#use <conio>
+
+int main() {
+  // dummy start + end nodes
+  dll* start = alloc(dll);
+  dll* end = alloc(dll);
+
+  // empty tbuf
+  tbuf* a = alloc(tbuf);
+  a->start = start;
+  a->end = end;
+  a->cursor = end;
+  start->next = end;
+  end->prev = start;
+  assert(is_tbuf(a));
+  printf("empty test passed!\n");
+
+  // size 1 tbuf
+  tbuf* b = alloc(tbuf);
+  b->start = start;
+  b->end = end;
+  dll* da = alloc(dll);
+  da->data = 'a';
+  da->prev = start;
+  assert(!is_tbuf(b));
+  printf("caught null node!\n");
+
+  start->next = da;
+  da->next = end;
+  end->prev = da;
+  b->cursor = da;
+  assert(is_tbuf(b));
+  printf("size 1 test passed!\n");
+
+  // size 2 tbuf
+  dll* db = alloc(dll);
+  db->data = 'b';
+  da->next = db;
+  db->prev = da;
+  assert(!is_tbuf(b));
+  printf("caught null node!\n");
+
+  db->next = end;
+  end->prev = db;
+  assert(is_tbuf(b));
+  printf("size 2 test passed!\n");
+
+  // incorrect cursor location
+  dll* dc = alloc(dll);
+  dc->data = 'c';
+  dc->prev = start;
+  b->cursor = dc;
+  assert(!is_tbuf(b));
+  printf("caught incorrect cursor!\n");
+
+  // incorrect mirror linking
+  db->next = dc;
+  dc->next = end;
+  end->prev = dc;
+  assert(!is_tbuf(b));
+  printf("caught incorrect linking!\n");
+
+  // NULL node in middle
+  dll* dd = alloc(dll);
+  dc->next = dd;
+  end->prev = dd;
+  assert(!is_tbuf(b));
+  printf("caught incorrect linking!\n");
+
+  tbuf* c = alloc(tbuf);
+  dll* c1 = alloc(dll);
+  dll* c2 = alloc(dll);
+  c->start = c1;
+  assert(!is_tbuf(c));
+  printf("caught start null node!\n");
+
+  c->end = c2;
+  assert(!is_tbuf(c));
+  printf("caught end null node!\n");
+
+  dll* c3 = alloc(dll);
+  start->next = c3;
+  end->prev = c3;
+  assert(!is_tbuf(c));
+  printf("caught null node!\n");
+
+  dll* c4 = alloc(dll);
+  c4->data = 'a';
+  c1->next = c4;
+  c4->prev = c1;
+  c4->next = c2;
+  assert(!is_tbuf(c));
+  printf("caught null node!\n");
+
+  // diderot examples
+  tbuf* z = alloc(tbuf);
+  dll* z1 = alloc(dll);
+  dll* z2 = alloc(dll);
+  dll* z3 = alloc(dll);
+  dll* z4 = alloc(dll);
+  dll* z5 = alloc(dll);
+
+  z2->data = 'a';
+  z3->data = 'b';
+  z4->data = 'c';
+
+  z->start = z1;
+  z->end = z5;
+  z->cursor = z4;
+
+  z1->next = z2;
+  z2->prev = z1;
+  z2->next = z3;
+  z3->prev = z2;
+  z3->next = z5;
+  z5->prev = z3;
+  z4->prev = z1;
+  z4->next = z5;
+  assert(!is_tbuf(z));
+  printf("cursor not in path found!\n");
+
+  tbuf* y = alloc(tbuf);
+  dll* y1 = alloc(dll);
+  dll* y2 = alloc(dll);
+  dll* y3 = alloc(dll);
+  dll* y4 = alloc(dll);
+  dll* y5 = alloc(dll);
+
+  y2->data = 'a';
+  y3->data = 'b';
+  y4->data = 'c';
+
+  y->start = y1;
+  y->end = y5;
+  y->cursor = y4;
+
+  y1->next = y2;
+  y2->prev = y1;
+  y2->next = y4;
+  y4->prev = y2;
+  y4->next = y5;
+  y5->prev = y3;
+  y3->prev = y2;
+  y3->next = y5;
+  assert(!is_tbuf(y));
+  printf("caught incorrect mirror linking!\n");
+
+  printf("*** all is_tbuf() tests passed! ***\n");
+  return 0;
+}

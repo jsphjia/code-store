@@ -1,0 +1,22 @@
+#use <conio>
+
+typedef struct stringStruct str;
+struct stringStruct {
+    int data;
+    int* len;
+};
+
+str* helper(int n) {
+    str* new = alloc(str);
+    new->len = alloc(int);
+    *(new->len) = n;
+    new->data = 80;
+    return new;
+}
+
+int main() {
+    str* res = helper(5);
+    printint(*(res->len));
+    println("\n");
+    return 0;
+}
